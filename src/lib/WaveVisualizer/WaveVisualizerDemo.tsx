@@ -1,75 +1,81 @@
-import type {FC} from 'react';
-import {useState, useRef, useEffect, useCallback} from 'react';
+import type { FC } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
-import type {WaveVisualizerRef} from './WaveVisualizer';
-import {WaveVisualizer} from './WaveVisualizer';
+import type { WaveVisualizerRef } from './WaveVisualizer';
+import { WaveVisualizer } from './WaveVisualizer';
 
 export const WaveVisualizerDemo: FC = () => {
-    const [isRecording, setIsRecording] = useState(false);
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const mediaStreamRef = useRef<MediaStream | null>(null);
-    const analyzerRef = useRef<AnalyserNode | null>(null);
-    const visualizerRef = useRef<WaveVisualizerRef>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const analyzerRef = useRef<AnalyserNode | null>(null);
+  const visualizerRef = useRef<WaveVisualizerRef>(null);
 
-    const startRecording = async () => {
-        try {
-            // Request microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-            mediaStreamRef.current = stream;
+  const startRecording = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
 
-            // Create audio context and analyzer
-            const audioContext = new AudioContext();
-            audioContextRef.current = audioContext;
-            const analyzer = audioContext.createAnalyser();
-            analyzerRef.current = analyzer;
+      // Create audio context and analyzer
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      const analyzer = audioContext.createAnalyser();
+      analyzerRef.current = analyzer;
 
-            // Configure analyzer
-            analyzer.fftSize = 64;
-            analyzer.smoothingTimeConstant = 0.9;
+      // Configure analyzer
+      analyzer.fftSize = 32;
+      analyzer.smoothingTimeConstant = 0.8;
 
-            // Connect microphone to analyzer
-            const source = audioContext.createMediaStreamSource(stream);
-            source.connect(analyzer);
+      // Connect microphone to analyzer
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyzer);
 
-            // Start visualization
-            visualizerRef.current?.startVisualization(analyzer);
-            setIsRecording(true);
-        } catch (error) {
-            console.error('Error accessing microphone:', error);
-        }
+      // Start visualization
+      visualizerRef.current?.startVisualization(analyzer);
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  };
+
+  const stopRecording = useCallback(() => {
+    if (mediaStreamRef.current) {
+      for (const track of mediaStreamRef.current.getTracks()) {
+        track.stop();
+      }
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+    }
+    setIsRecording(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopRecording();
     };
+  }, [stopRecording]);
 
-    const stopRecording = useCallback(() => {
-        if (mediaStreamRef.current) {
-            for (const track of mediaStreamRef.current.getTracks()) {
-                track.stop();
-            }
-        }
-        if (audioContextRef.current) {
-            audioContextRef.current.close();
-        }
-        setIsRecording(false);
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            stopRecording();
-        };
-    }, [stopRecording]);
-
-    return (
-        <div className="wave-visualizer-demo">
-            <h2>Wave Visualizer Demo</h2>
-            <div className="controls">
-                <button
-                    type="button"
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={isRecording ? 'stop' : 'start'}>
-                    {isRecording ? 'Stop Recording' : 'Start Recording'}
-                </button>
-            </div>
-            <WaveVisualizer ref={visualizerRef} barColor="blue" barGap={2} height={600} width={600} />
-            <style>{`
+  return (
+    <div className="wave-visualizer-demo">
+      <h2>Wave Visualizer Demo</h2>
+      <div className="controls">
+        <button
+          type="button"
+          onClick={isRecording ? stopRecording : startRecording}
+          className={isRecording ? 'stop' : 'start'}>
+          {isRecording ? 'Stop Recording' : 'Start Recording'}
+        </button>
+      </div>
+      <WaveVisualizer
+        ref={visualizerRef}
+        barColor="blue"
+        barGap={2}
+        height={150}
+        width={300}
+      />
+      <style>{`
                 .wave-visualizer-demo {
                     padding: 20px;
                     display: flex;
@@ -100,6 +106,6 @@ export const WaveVisualizerDemo: FC = () => {
                     opacity: 0.9;
                 }
             `}</style>
-        </div>
-    );
+    </div>
+  );
 };

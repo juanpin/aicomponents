@@ -1,1 +1,1 @@
-export {WaveVisualizer} from './WaveVisualizer.tsx';
+export { WaveVisualizer } from './WaveVisualizer.tsx';

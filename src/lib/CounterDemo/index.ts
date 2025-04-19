@@ -1,1 +1,1 @@
-export {Counter} from './Counter.tsx';
+export { Counter } from './Counter.tsx';
