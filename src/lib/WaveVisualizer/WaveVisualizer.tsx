@@ -8,6 +8,8 @@ import {
   useImperativeHandle,
 } from 'react';
 
+import classes from './WaveVisualizer.module.css';
+
 export type WaveVisualizerProps = {
   /** Color of the bars */
   barColor?: string;
@@ -123,7 +125,14 @@ export const WaveVisualizer = forwardRef<
       startVisualization,
     }));
 
-    return <canvas ref={canvasRef} width={width} height={height} />;
+    return (
+      <canvas
+        className={classes.visualizer}
+        ref={canvasRef}
+        width={width}
+        height={height}
+      />
+    );
   }
 );
 

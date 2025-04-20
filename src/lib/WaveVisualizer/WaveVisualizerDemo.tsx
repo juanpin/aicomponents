@@ -75,6 +75,7 @@ export const WaveVisualizerDemo: FC = () => {
         height={150}
         width={300}
       />
+
       <style>{`
                 .wave-visualizer-demo {
                     padding: 20px;
